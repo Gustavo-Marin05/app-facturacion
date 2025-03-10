@@ -17,6 +17,7 @@ model User {
   password  String
   role      Role      @default(USER)
   invoices  Invoice[]
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -26,10 +27,10 @@ enum Role {
   USER
 }
 
-model Customer {
+model Customer {/* cliente */
   id       Int       @id @default(autoincrement())
   ci       String?   @unique
-  fullName String?
+  fullName String? @default("Anónimo")
   invoices Invoice[]
 }
 
@@ -43,7 +44,7 @@ model Product {
   updatedAt DateTime        @updatedAt
 }
 
-model Invoice {
+model Invoice { /* factura */
   id         Int             @id @default(autoincrement())
   date       DateTime        @default(now())
   user       User            @relation(fields: [userId], references: [id])
@@ -65,7 +66,7 @@ enum InvoiceStatus {
   CANCELLED
 }
 
-model InvoiceDetail {
+model InvoiceDetail {/* detalle de la factura */
   id        Int     @id @default(autoincrement())
   invoice   Invoice @relation(fields: [invoiceId], references: [id])
   invoiceId Int
