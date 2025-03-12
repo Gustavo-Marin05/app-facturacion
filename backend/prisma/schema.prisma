@@ -10,10 +10,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model User { /* usuario */
   id        Int       @id @default(autoincrement())
   fullName      String
-  email     String    @unique
+  ci     String    @unique
   password  String
   role      Role      @default(USER)
   invoices  Invoice[]
@@ -30,18 +30,32 @@ enum Role {
 model Customer {/* cliente */
   id       Int       @id @default(autoincrement())
   ci       String?   @unique
-  fullName String? @default("Anónimo")
+  fullName String? @default("Anónimo client")
   invoices Invoice[]
 }
 
-model Product {
-  id        Int             @id @default(autoincrement())
-  name      String
-  price     Float
-  stock     Int
-  details   InvoiceDetail[]
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+
+model Category {/* categoria */
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  products    Product[] // Relación con productos
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {/* producto */
+  id          Int             @id @default(autoincrement())
+  name        String
+  price       Float
+  stock       Int
+  // Añadir relación con categoría
+  category    Category       @relation(fields: [categoryId], references: [id])
+  categoryId  Int           
+  details     InvoiceDetail[]
+  
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }
 
 model Invoice { /* factura */

@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { TOKEN_SECRET } from "../config.js"
-export function createaccestoken(payload){
+export function createAccesToken(payload){
 
     return new Promise((resolve,reject)=>{
 
@@ -8,7 +8,7 @@ export function createaccestoken(payload){
             payload ,
             TOKEN_SECRET,
             {
-                expiresIn:'1d',
+                expiresIn:'1h',
             },
             (err,token)=>{
                 if(err) reject(err);
