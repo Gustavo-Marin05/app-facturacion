@@ -19,7 +19,9 @@ npm run dev
 ```
 
 ---
-para poder guardar los cambios en la base de datos sin una migracion
+
+(importante )
+si es que por si acaso no da algo sobre la base de datos ingresar el siguiente comando
 ```sh
 npx prisma db push
 ```
