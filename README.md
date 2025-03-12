@@ -17,3 +17,9 @@ con el siguiente comando se ejecutara el proyecto o programa
 ```sh
 npm run dev
 ```
+
+---
+para poder guardar los cambios en la base de datos sin una migracion
+```sh
+npx prisma db push
+```
