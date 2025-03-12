@@ -37,7 +37,7 @@ export const registerUserAdmin = async (data) => {
 
         })
 
-        const token = await createAccesToken({ id: newUserAdmin.id });
+        const token = await createAccesToken({ id: newUserAdmin.id, role: newUserAdmin.role });
         return ({
             id: newUserAdmin.id,
             fullName: newUserAdmin.fullName,
@@ -54,42 +54,66 @@ export const registerUserAdmin = async (data) => {
     }
 }
 
-
 export const login = async (ci, password) => {
     try {
-
         if (!ci || !password) {
-            return res.status(400).json({ message: "ci and password is required" });
-          }
-        //primero encontramos al admin o user
+            throw new Error("CI y contraseña son requeridos");
+        }
+
+        // Buscar al usuario en la base de datos
         const userFound = await prisma.user.findUnique({
-            where: {
-                ci: ci
-            }
-        })
-        if (!userFound) return ['user not found'];
+            where: { ci: ci }
+        });
 
-        const isMach = await bcrypt.compare(password, userFound.password);
-        if (!isMach) return ['password incorrect'];
+        if (!userFound) {
+            throw new Error("Usuario no encontrado");
+        }
 
-        //creacion del token
-        const token = await createAccesToken({ id: userFound.id });
+        // Comparar contraseñas
+        const isMatch = await bcrypt.compare(password, userFound.password);
+        if (!isMatch) {
+            throw new Error("Contraseña incorrecta");
+        }
 
-        return({
+        // Crear token de acceso
+        const token = await createAccesToken({ id: userFound.id, role: userFound.role });
+
+        return {
             id: userFound.id,
             fullName: userFound.fullName,
             ci: userFound.ci,
             role: userFound.role,
-            role: userFound.role,
             createdAt: userFound.createdAt,
             updatedAt: userFound.updatedAt,
             token
+        };
 
-        })
     } catch (error) {
-        console.log(error);
-        throw new Error("Error al iniciar sesion");
-
+        throw new Error(error.message);
     }
+};
 
+export const getProfile =async(userId)=>{
+    try {
+        const userFound=await prisma.user.findUnique({
+            where:{
+                id:userId,
+                role:'ADMIN'
+            }
+        })
+
+        if(!userFound) return ['el usuario no existe'];
+
+        return {
+            id:userFound.id,
+            fullName:userFound.fullName,
+            ci:userFound.ci,
+            role:userFound.role,
+            createdAt:userFound.createdAt,
+            updatedAt:userFound.updatedAt
+        }
+         
+    } catch (error) {
+        throw new Error(error.message);
+    }
 }
