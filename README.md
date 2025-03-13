@@ -25,3 +25,11 @@ si es que por si acaso no da algo sobre la base de datos ingresar el siguiente c
 ```sh
 npx prisma db push
 ```
+
+
+---
+para actualizar tu proyecto clonado con los cambios que se hicieron recientementes
+```sh
+git pull origin main
+
+```
