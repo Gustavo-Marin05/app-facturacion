@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-import { createUser, getAllUsers, getaUser } from "./userService.js";
-=======
-import { createUser, getAllUsers, deleteUserById } from "./userService.js";
+import { createUser, getAllUsers, deleteUserById,getaUser } from "./userService.js";
 
->>>>>>> ce160d9d6a9727e71ed4e53895f8e8b6d3b78077
 
 export const userCreate = async (req, res) => {
     //es con metododo post , solo el usuario tipo admin podra crear el usuario tipo user
