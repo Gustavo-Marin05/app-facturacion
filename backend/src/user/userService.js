@@ -1,4 +1,4 @@
-import {prisma} from '../db.js'
+import { prisma } from '../db.js'
 import bcrypt from 'bcryptjs'
 
 
@@ -13,7 +13,7 @@ export const createUser = async (idAdmin, data) => {
 
         // Verificar si el usuario ya existe
         const userFound = await prisma.user.findUnique({
-            where: { ci :ci, role: 'USER'}
+            where: { ci: ci, role: 'USER' }
         });
 
         if (userFound) return ['user already exists'];
@@ -49,11 +49,11 @@ export const createUser = async (idAdmin, data) => {
 };
 
 //funcion para obtener un usuario
-export const getaUser=async(idAdmin,id)=>{
+export const getaUser = async (idAdmin, id) => {
     try {
         const user = await prisma.user.findFirst({
             where: {
-                id: Number(id),  
+                id: Number(id),
                 idAdmin: Number(idAdmin)
             }
         });
@@ -72,15 +72,15 @@ export const getaUser=async(idAdmin,id)=>{
 
 
 //funcion para obtener todos los usuarios
-export const getAllUsers = async(idAdmin)=>{
+export const getAllUsers = async (idAdmin) => {
     try {
-        const users= await prisma.user.findMany({
-            where:{
-                idAdmin:idAdmin
+        const users = await prisma.user.findMany({
+            where: {
+                idAdmin: idAdmin
             }
         });
         return users;
-        
+
     } catch (error) {
         console.log('error en getUsers', error);
     }
@@ -89,7 +89,38 @@ export const getAllUsers = async(idAdmin)=>{
 
 
 //funcion para actualizar un usuario
-export const updateUserById=async()=>{
+export const updateUserById = async (idAdmin, idUser, dataUser) => {
+
+    try {
+        const userFound = await prisma.user.findUnique({
+            where: {
+                id: Number(idUser),
+                role: 'USER'
+            }
+        })
+
+        if (dataUser.password) {
+            // Número de rondas de sal para el hashing
+           dataUser.password = await bcrypt.hash(dataUser.password, 10);
+         }
+
+        if (!userFound) return ['el usuario no existe'];
+
+        const userUpdate = await prisma.user.update({
+
+            where: {
+                id: Number(idUser),
+                role: 'USER',
+                idAdmin: idAdmin
+            },
+            data: dataUser
+        })
+
+        return userUpdate;
+
+    } catch (error) {
+        console.log(error);
+    }
 
 }
 

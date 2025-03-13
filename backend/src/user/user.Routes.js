@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getUser, getUsers, userCreate,deleteUser, } from "./user.Controller.js";
+import { getUser, getUsers, userCreate,deleteUser, updateUser, } from "./user.Controller.js";
 import { authRequired } from "../middleware/validateToken.js";
 import { isAdmin } from "../middleware/roleMiddleware.js";
 
@@ -12,6 +12,7 @@ router.post("/user", authRequired,isAdmin,userCreate);
 router.get("/user", authRequired,isAdmin,getUsers);
 router.get("/user/:id", authRequired, isAdmin, getUser);
 router.delete("/user/:id", authRequired, isAdmin, deleteUser);
+router.put("/user/:id", authRequired, isAdmin, updateUser);
 
 
 

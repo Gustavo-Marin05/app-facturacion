@@ -4,7 +4,7 @@ import { registerUserAdmin, login, getProfile } from "./authService.js";
 //controlador de registro de usuario admin
 export const registerAdmin = async (req, res) => {
     try {
-        const userAdmin = await registerUserAdmin(req.body);
+        const userAdmin = await registerUserAdmin(req.params);
         res.status(200).json(userAdmin)
     } catch (error) {
         res.status(400).json('error en registerUserAdmin');

@@ -98,7 +98,6 @@ export const getProfile =async(userId)=>{
         const userFound=await prisma.user.findUnique({
             where:{
                 id:userId,
-                role:'ADMIN'
             }
         })
 

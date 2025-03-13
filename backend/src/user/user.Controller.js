@@ -1,4 +1,4 @@
-import { createUser, getAllUsers, deleteUserById,getaUser } from "./userService.js";
+import { createUser, getAllUsers, deleteUserById, getaUser, updateUserById } from "./userService.js";
 
 
 export const userCreate = async (req, res) => {
@@ -7,9 +7,9 @@ export const userCreate = async (req, res) => {
     //este suario creado solo tendra acceso a la facturacion
 
     try {
-        const user= await createUser(req.user.id, req.body);
+        const user = await createUser(req.user.id, req.body);
         res.status(200).json(user);
-        
+
     } catch (error) {
         res.status(400).json('error en ');
     }
@@ -36,9 +36,9 @@ export const getUsers = async (req, res) => {
     //el user tipo user no podra pedir todos los usuarios
 
     try {
-        const user =await getAllUsers(req.user.id);
+        const user = await getAllUsers(req.user.id);
         res.status(200).json(user);
-        
+
     } catch (error) {
         res.status(400).json('error en ');
     }
@@ -48,6 +48,13 @@ export const getUsers = async (req, res) => {
 export const updateUser = async (req, res) => {
     //esta funcion solo actualizara un usuario mientras el user tipo admin este logeado
     //el user tipo user no podra actualizar un usuario
+
+    try {
+        const user = await updateUserById(req.user.id, req.params.id, req.body);
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(400).json('error en updateproductbyid ');
+    }
 
 }
 
