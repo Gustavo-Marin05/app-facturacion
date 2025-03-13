@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getUsers, userCreate } from "./user.Controller.js";
+import { getUser, getUsers, userCreate } from "./user.Controller.js";
 import { authRequired } from "../middleware/validateToken.js";
 import { isAdmin } from "../middleware/roleMiddleware.js";
 
@@ -10,6 +10,7 @@ const router = Router();
 
 router.post("/user", authRequired,isAdmin,userCreate);
 router.get("/user", authRequired,isAdmin,getUsers);
+router.get("/user/:id", authRequired, isAdmin, getUser);
 
 
 

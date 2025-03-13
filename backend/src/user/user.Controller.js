@@ -1,4 +1,4 @@
-import { createUser, getAllUsers } from "./userService.js";
+import { createUser, getAllUsers, getaUser } from "./userService.js";
 
 export const userCreate = async (req, res) => {
     //es con metododo post , solo el usuario tipo admin podra crear el usuario tipo user
@@ -19,6 +19,13 @@ export const userCreate = async (req, res) => {
 export const getUser = async (req, res) => {
     //esta funcion solo pedira un usuario mientras el user tipo admin este logeado
     //el user tipo user no podra pedir un usuario
+    try {
+        const user = await getaUser(req.user.id, req.params.id);
+
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(400).json({ error: "Error al obtener usuario" });
+    }
 
 
 }

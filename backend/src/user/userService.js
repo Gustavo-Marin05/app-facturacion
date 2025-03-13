@@ -49,8 +49,25 @@ export const createUser = async (idAdmin, data) => {
 };
 
 //funcion para obtener un usuario
-export const getaUser=async()=>{
+export const getaUser=async(idAdmin,id)=>{
+    try {
+        const user = await prisma.user.findFirst({
+            where: {
+                id: Number(id),  
+                idAdmin: Number(idAdmin)
+            }
+        });
 
+        if (!user) {
+            return { error: "Usuario no encontrado o no autorizado" };
+        }
+
+        return user;
+
+    } catch (error) {
+        console.error("Error en getaUser:", error);
+        return { error: "Error interno del servidor" };
+    }
 }
 
 
