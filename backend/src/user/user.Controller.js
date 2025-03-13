@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 import { createUser, getAllUsers, getaUser } from "./userService.js";
+=======
+import { createUser, getAllUsers, deleteUserById } from "./userService.js";
+
+>>>>>>> ce160d9d6a9727e71ed4e53895f8e8b6d3b78077
 
 export const userCreate = async (req, res) => {
     //es con metododo post , solo el usuario tipo admin podra crear el usuario tipo user
@@ -50,9 +55,18 @@ export const updateUser = async (req, res) => {
 
 }
 
-export const deleteUser = async (req, res) => {
-    //esta funcion solo eliminara un usuario mientras el user tipo admin este logeado
-    //el user tipo user no podra eliminar un usuario
 
-}
+export const deleteUser = async (req, res) => {
+    try {
+        const result = await deleteUserById(req.user.id, req.params.id); // Pasar el ID del admin
+
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
 

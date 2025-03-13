@@ -95,6 +95,36 @@ export const updateUserById=async()=>{
 
 
 //funcion para eliminar un usuario
-export const deleteUserById=async()=>{
+export const deleteUserById = async (idAdmin, userId) => {
+    try {
+        const userIdNum = parseInt(userId, 10); // Convertir el ID a número
 
-}
+        if (isNaN(userIdNum)) {
+            return { error: "Invalid user ID" };
+        }
+
+        // Verificar si el usuario existe y fue creado por el admin actual
+        const userFound = await prisma.user.findUnique({
+            where: { id: userIdNum }
+        });
+
+        if (!userFound) {
+            return { error: "User not found" };
+        }
+
+        if (userFound.idAdmin !== idAdmin) {
+            return { error: "Unauthorized action" };
+        }
+
+        // Eliminar usuario
+        await prisma.user.delete({
+            where: { id: userIdNum }
+        });
+
+        return { message: "User deleted successfully" };
+
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        return { error: "Internal server error" };
+    }
+};
