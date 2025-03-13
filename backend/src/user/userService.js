@@ -8,7 +8,7 @@ export const createUser = async (idAdmin, data) => {
         const { fullName, ci, password, role } = data;
 
         if (!fullName || !ci || !password) {
-            return { error: "Todos los campos son requeridos" };
+            return { error: "required" };
         }
 
         // Verificar si el usuario ya existe
@@ -49,24 +49,35 @@ export const createUser = async (idAdmin, data) => {
 };
 
 //funcion para obtener un usuario
-export const getUser=async()=>{
+export const getaUser=async()=>{
 
 }
 
 
 //funcion para obtener todos los usuarios
-export const getUsers = async()=>{
+export const getAllUsers = async(idAdmin)=>{
+    try {
+        const users= await prisma.user.findMany({
+            where:{
+                idAdmin:idAdmin
+            }
+        });
+        return users;
+        
+    } catch (error) {
+        console.log('error en getUsers', error);
+    }
 
 }
 
 
 //funcion para actualizar un usuario
-export const updateUser=async()=>{
+export const updateUserById=async()=>{
 
 }
 
 
 //funcion para eliminar un usuario
-export const deleteUser=async()=>{
+export const deleteUserById=async()=>{
 
 }
