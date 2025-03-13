@@ -10,13 +10,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User { /* usuario */
+model User { 
   id        Int       @id @default(autoincrement())
-  fullName      String
-  ci     String    @unique
+  fullName  String
+  ci        String    @unique
   password  String
   role      Role      @default(USER)
   invoices  Invoice[]
+
+  //Relación entre ADMIN y USERS
+  idAdmin   Int?      // ID del ADMIN que lo creó
+  admin     User?     @relation("AdminToUsers", fields: [idAdmin], references: [id])
+  users     User[]    @relation("AdminToUsers")
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

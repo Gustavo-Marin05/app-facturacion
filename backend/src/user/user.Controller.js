@@ -1,9 +1,17 @@
 import { createUser } from "./userService.js";
 
-export const createUser = async (req, res) => {
+export const userCreate = async (req, res) => {
     //es con metododo post , solo el usuario tipo admin podra crear el usuario tipo user
     //el usuario tipo user no podra crear otro usuario
     //este suario creado solo tendra acceso a la facturacion
+
+    try {
+        const user= await createUser(req.user.id, req.body);
+        res.status(200).json(user);
+        
+    } catch (error) {
+        res.status(400).json('error en ');
+    }
 
 
 }
