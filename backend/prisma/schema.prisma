@@ -10,23 +10,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User { 
-  id        Int       @id @default(autoincrement())
-  fullName  String
-  ci        String    @unique
-  password  String
-  role      Role      @default(USER)
-  invoices  Invoice[]
+model User {
+  id       Int       @id @default(autoincrement())
+  fullName String
+  ci       String    @unique
+  password String
+  role     Role      @default(USER)
+  invoices Invoice[]
 
   //Relación entre ADMIN y USERS
-  idAdmin   Int?      // ID del ADMIN que lo creó
-  admin     User?     @relation("AdminToUsers", fields: [idAdmin], references: [id])
-  users     User[]    @relation("AdminToUsers")
+  idAdmin    Int? // ID del ADMIN que lo creó
+  admin      User?      @relation("AdminToUsers", fields: [idAdmin], references: [id])
+  users      User[]     @relation("AdminToUsers")
   categories Category[]
-  products Product[]
+  products   Product[]
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Role {
@@ -34,49 +34,46 @@ enum Role {
   USER
 }
 
-model Customer {/* cliente */
+model Customer {
   id       Int       @id @default(autoincrement())
   ci       String?   @unique
-  fullName String? @default("Anónimo client")
+  fullName String?   @default("Anónimo client")
   invoices Invoice[]
 }
 
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[] // Relación con productos
 
-model Category {/* categoria */
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
-  products    Product[] // Relación con productos
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
 
-  user        User      @relation(fields: [userId], references: [id])
-  userId      Int  
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Product {/* producto */
-  id          Int             @id @default(autoincrement())
-  name        String
-  price       Float
-  stock       Int
+model Product {
+  id         Int      @id @default(autoincrement())
+  name       String
+  price      Float
+  stock      Int
   // Añadir relación con categoría
-  category    Category       @relation(fields: [categoryId], references: [id])
-  categoryId  Int   
-
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
 
   //relacion con el usuario quien lo creo
 
-   user        User      @relation(fields: [userId], references: [id])
-  userId      Int
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
 
+  details InvoiceDetail[]
 
-  details     InvoiceDetail[]
-  
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Invoice { /* factura */
+model Invoice {
   id         Int             @id @default(autoincrement())
   date       DateTime        @default(now())
   user       User            @relation(fields: [userId], references: [id])
@@ -98,7 +95,7 @@ enum InvoiceStatus {
   CANCELLED
 }
 
-model InvoiceDetail {/* detalle de la factura */
+model InvoiceDetail {
   id        Int     @id @default(autoincrement())
   invoice   Invoice @relation(fields: [invoiceId], references: [id])
   invoiceId Int
