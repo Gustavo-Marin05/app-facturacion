@@ -33,3 +33,11 @@ para actualizar tu proyecto clonado con los cambios que se hicieron recientement
 git pull origin main
 
 ```
+
+---
+(opcional)  ya que estamos usando el orm de prisma podemos aprovechar su studio para fijarnos la tablas de base de datos
+con el siguinte comando
+
+```sh
+npx prisma studio
+```
