@@ -1,4 +1,5 @@
-import { getaCategory, updateCategory } from "./categoryService.js";
+import { json } from "express";
+import { getaCategory, getAllCategories, updateCategory } from "./categoryService.js";
 
 export const getaCategoryController = async (req, res) => {
     try {
@@ -28,3 +29,25 @@ export const updateCategoryController = async (req, res) => {
         res.status(500).json({ error: 'Error al actualizar la categoria' });
     }
 };
+
+//controlador para obtener todas las categorias
+export const getAllCategoriesController = async (req, res) => {
+    try {
+        
+        const category=await getAllCategories(req.user.id);
+        res.status(200).json(category);
+    } catch (error) {
+        res.status(400).json('error en getallcategories')
+        
+    }
+}
+
+//controlador para borrar todas las categorias
+export const deleteCategoryController =async (req,res)=>{
+    try {
+        const category =await deleteCategory(req.params.id);
+        res.status(200).json(category)
+    } catch (error) {
+        res.status(400).json('error en deletecategory')
+    }
+}
