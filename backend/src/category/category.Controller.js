@@ -1,5 +1,6 @@
 import { json } from "express";
 import { getaCategory, getAllCategories, updateCategory } from "./categoryService.js";
+import { createCategory } from "./categoryService.js";
 
 export const getaCategoryController = async (req, res) => {
     try {
@@ -51,3 +52,22 @@ export const deleteCategoryController =async (req,res)=>{
         res.status(400).json('error en deletecategory')
     }
 }
+
+// Controlador para crear una categoría
+export const createCategoryController = async (req, res) => {
+    try {
+        const idAdmin = req.user.id; // ID del administrador autenticado
+        const data = req.body; // Datos de la categoría a crear
+
+        const newCategory = await createCategory(idAdmin, data);
+
+        if (newCategory.error) {
+            return res.status(400).json({ error: newCategory.error });
+        }
+
+        res.status(200).json(newCategory);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al crear la categoría.' });
+    }
+};
+

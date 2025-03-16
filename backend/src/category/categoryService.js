@@ -36,7 +36,7 @@ export const getAllCategories = async (idAdmin) => {
             },
             include: {
                 user: true,
-                prodicts: true
+                products: true
             }
         })
 
@@ -91,3 +91,43 @@ export const deleteCategory = async (idCategory) => {
     }
 }
 
+// Función para crear una categoría
+export const createCategory = async (idAdmin, data) => {
+    try {
+        const { name } = data;
+
+        // Validar que el campo obligatorio 'name' esté presente
+        if (!name) {
+            return { error: "El nombre de la categoría es obligatorio." };
+        }
+
+        // Verificar si ya existe una categoría con el mismo nombre para el mismo administrador
+        const categoryFound = await prisma.category.findFirst({
+            where: {
+                name: name,
+                userId: idAdmin
+            }
+        });
+
+        if (categoryFound) {
+            return { error: "La categoría ya existe." };
+        }
+
+        // Crear la nueva categoría
+        const newCategory = await prisma.category.create({
+            data: {
+                name,
+                userId: idAdmin
+            }
+        });
+
+        return {
+            id: newCategory.id,
+            name: newCategory.name
+        };
+
+    } catch (error) {
+        console.error("Error al crear la categoría:", error);
+        return { error: "Error interno del servidor." };
+    }
+};
