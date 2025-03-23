@@ -11,7 +11,12 @@ export const createCustomer = async (userId, data) => {
         userId: userId, // Relaciona al usuario que lo crea
       },
     });
-    return newCustomer;
+    return {
+      id: newCustomer.id,
+      fullName: newCustomer.fullName,
+      ci: newCustomer.ci,
+      userId: newCustomer.userId
+    };
   } catch (error) {
     console.error("Error al crear cliente:", error);
     return { error: "Error al crear cliente" };
