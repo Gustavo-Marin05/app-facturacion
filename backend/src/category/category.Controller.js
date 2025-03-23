@@ -1,4 +1,3 @@
-import { json } from "express";
 import { deleteCategory, getaCategory, getAllCategories, updateCategory } from "./categoryService.js";
 import { createCategory } from "./categoryService.js";
 
