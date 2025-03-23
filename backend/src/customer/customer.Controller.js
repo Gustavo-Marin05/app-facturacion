@@ -1,4 +1,5 @@
-import { deleteCustomer, getaCustomer, getAllCustomer } from "./customerService.js";
+
+import { deleteCustomer, getaCustomer, getAllCustomer, updateCustomerById } from "./customerService.js";
 
 
 
@@ -37,3 +38,21 @@ export const deleteCustomerController =async (req,res)=>{
         res.status(400).json('error en deletecustomer')
     }
 }
+
+
+export const updateCustomerController = async (req, res) => {
+  try {
+    const idAdmin = req.user.id;
+    const customerId = req.params.id;
+
+    const updatedCustomer = await updateCustomerById(idAdmin, customerId, req.body);
+
+    if (updatedCustomer.error) {
+      return res.status(400).json({ error: updatedCustomer.error });
+    }
+
+    res.status(200).json(updatedCustomer);
+  } catch (error) {
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
