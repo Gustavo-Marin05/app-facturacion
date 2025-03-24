@@ -5,7 +5,7 @@ import { createCustomer,deleteCustomer, getaCustomer, getAllCustomer, updateCust
 export const createCustomerController = async (req, res) => {
   try {
     const newCustomer = await createCustomer(req.user.id, req.body); // req.user.id viene del token
-    res.status(201).json(newCustomer);
+    res.status(200).json(newCustomer);
   } catch (error) {
     res.status(500).json({ error: "Error al crear el cliente" });
   }
