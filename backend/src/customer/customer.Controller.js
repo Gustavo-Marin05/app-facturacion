@@ -1,7 +1,15 @@
 
-import { deleteCustomer, getaCustomer, getAllCustomer, updateCustomerById } from "./customerService.js";
+import { createCustomer,deleteCustomer, getaCustomer, getAllCustomer, updateCustomerById } from "./customerService.js";
 
-
+// Crear un cliente
+export const createCustomerController = async (req, res) => {
+  try {
+    const newCustomer = await createCustomer(req.user.id, req.body); // req.user.id viene del token
+    res.status(201).json(newCustomer);
+  } catch (error) {
+    res.status(500).json({ error: "Error al crear el cliente" });
+  }
+};
 
 
 //obtener todos los clientes

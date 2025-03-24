@@ -1,7 +1,27 @@
 import { prisma } from "../db.js";
 
 //funcionalidad tarea de caisa
-export const createCustomer = async () => {};
+// Crear cliente
+export const createCustomer = async (userId, data) => {
+  try {
+    const newCustomer = await prisma.customer.create({
+      data: {
+        fullName: data.fullName,
+        ci: data.ci,
+        userId: userId, // Relaciona al usuario que lo crea
+      },
+    });
+    return {
+      id: newCustomer.id,
+      fullName: newCustomer.fullName,
+      ci: newCustomer.ci,
+      userId: newCustomer.userId
+    };
+  } catch (error) {
+    console.error("Error al crear cliente:", error);
+    return { error: "Error al crear cliente" };
+  }
+};
 
 //obtener todos los clientes
 
