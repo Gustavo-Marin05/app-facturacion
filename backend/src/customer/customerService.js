@@ -1,6 +1,6 @@
 import { prisma } from "../db.js";
 
-//funcionalidad tarea de caisa
+
 // Crear cliente
 export const createCustomer = async (userId, data) => {
   try {
@@ -8,7 +8,7 @@ export const createCustomer = async (userId, data) => {
       data: {
         fullName: data.fullName,
         ci: data.ci,
-        userId: userId, // Relaciona al usuario que lo crea
+        userId: userId, 
       },
     });
     return {
