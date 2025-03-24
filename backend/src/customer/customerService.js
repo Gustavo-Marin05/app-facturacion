@@ -18,6 +18,8 @@ export const getAllCustomer = async (userId) => {
     console.log(error);
   }
 };
+
+//obtener solo un cliente
 export const getaCustomer = async (idCustomer, idUser) => {
   try {
     const findCustomer = await prisma.customer.findUnique({
@@ -35,6 +37,8 @@ export const getaCustomer = async (idCustomer, idUser) => {
   }
 };
 
+
+//borrar un cliente
 export const deleteCustomer = async (idUser, idCustomer) => {
   try {
     const findCustomer = await prisma.customer.findUnique({
