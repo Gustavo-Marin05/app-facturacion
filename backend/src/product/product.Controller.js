@@ -28,9 +28,20 @@ export const getaProductController =async (req,res)=>{
 
 
 //tarea de monse
-export const deleteProductController =async (req,res)=>{
-
-}
+export const deleteProductController = async (req, res) => {
+    try {
+      const result = await deleteProduct(req.user.id, req.params.id);
+  
+      if (result.includes('producto no encontrado')) {
+        return res.status(404).json({ message: result[0] });
+      }
+  
+      res.status(200).json({ message: result[0] });
+    } catch (error) {
+      res.status(400).json({ message: 'error en deleteProduct' });
+    }
+  };
+  
 
 export const updateProductController =async (req,res)=>{
     try {
