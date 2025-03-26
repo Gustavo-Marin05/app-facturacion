@@ -31,15 +31,15 @@ export const getAllCategories = async (idAdmin) => {
       },
       include: {
         user: {
-            select: {
-                id: true,
-                fullName: true,
-                ci: true,
-                role: true,
-                idAdmin: true,
-                createdAt: true,
-                updatedAt: true
-            }
+          select: {
+            id: true,
+            fullName: true,
+            ci: true,
+            role: true,
+            idAdmin: true,
+            createdAt: true,
+            updatedAt: true,
+          },
         },
         products: true,
       },
@@ -129,5 +129,20 @@ export const createCategory = async (idAdmin, data) => {
   } catch (error) {
     console.error("Error al crear la categoría:", error);
     return { error: "Error interno del servidor." };
+  }
+};
+
+
+
+export const findCategoryById = async (id) => {
+  try {
+    const findCategory = await prisma.category.findFirst({
+      where: {
+        id: id,
+      },
+    });
+    return findCategory;
+  } catch (error) {
+    console.log(error);
   }
 };
