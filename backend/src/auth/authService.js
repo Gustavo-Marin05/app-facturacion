@@ -6,39 +6,33 @@ import { createAccesToken } from '../libs/jwt.js';
 
 //registro de un usuario admin
 export const registerUserAdmin = async (data) => {
-
     const { fullName, ci, password } = data;
 
     try {
-
-        const adminExist = await prisma.user.findUnique({
-            where: {
-                ci: ci,
-                role: 'ADMIN'
-            }
-        })
-
-        if (adminExist) return ['este usuario ya existe'];
-
+        if(!fullName) throw new Error("El campo 'FullName' es obligatorio");
+        if (!ci) throw new Error("El campo 'ci' es obligatorio");
         if (!password) throw new Error("La contraseña es requerida");
 
-        //encriptacion de la contraceña
+        const adminExist = await prisma.user.findFirst({
+            where: { ci, role: 'ADMIN' }
+        });
+
+        if (adminExist) return ['Este usuario ya existe'];
 
         const passwordHash = await bcrypt.hash(password, 10);
 
-        //creacion del usuario
         const newUserAdmin = await prisma.user.create({
             data: {
                 fullName,
                 ci,
-                password: passwordHash,//pasa la contraceña hasheada
+                password: passwordHash,
                 role: 'ADMIN'
             }
-
-        })
+        });
 
         const token = await createAccesToken({ id: newUserAdmin.id, role: newUserAdmin.role });
-        return ({
+
+        return {
             id: newUserAdmin.id,
             fullName: newUserAdmin.fullName,
             ci: newUserAdmin.ci,
@@ -46,13 +40,13 @@ export const registerUserAdmin = async (data) => {
             createdAt: newUserAdmin.createdAt,
             updatedAt: newUserAdmin.updatedAt,
             token
-        });
+        };
     } catch (error) {
-
-        console.log(error);
+        console.error(error);
         throw new Error("Error al registrar el usuario");
     }
-}
+};
+
 
 export const login = async (ci, password) => {
     try {
