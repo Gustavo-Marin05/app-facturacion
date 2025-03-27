@@ -80,13 +80,15 @@ export const deleteProduct = async (idAdmin, idProduct) => {
   try {
     const findProduct = await findProductById(idProduct, idAdmin);
     if (!findProduct) return ['producto no encontrado'];
-    await prisma.product.delete({
+
+
+    const deleteproduct =await prisma.product.delete({
       where: {
         id: Number(idProduct),
       },
     });
 
-    return ['producto eliminado correctamente'];
+    return deleteproduct;
   } catch (error) {
     console.log(error);
     return ['error al eliminar el producto'];

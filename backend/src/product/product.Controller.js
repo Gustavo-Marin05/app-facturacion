@@ -1,4 +1,4 @@
-import { createProduct, getAllProducts, getaProduct, updateProduct } from "./productService.js";
+import { createProduct, deleteProduct, getAllProducts, getaProduct, updateProduct } from "./productService.js";
 
 export const createProductController =async (req,res)=>{
 
@@ -37,14 +37,9 @@ export const getaProductController = async (req, res) => {
 export const deleteProductController = async (req, res) => {
     try {
       const result = await deleteProduct(req.user.id, req.params.id);
-  
-      if (result.includes('producto no encontrado')) {
-        return res.status(404).json({ message: result[0] });
-      }
-  
-      res.status(200).json({ message: result[0] });
+      res.status(200).json(result);
     } catch (error) {
-      res.status(400).json({ message: 'error en deleteProduct' });
+      res.status(400).json('error en delteproduct');
     }
   };
   
