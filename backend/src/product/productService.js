@@ -57,7 +57,23 @@ try {
 };
 
 //tarea de caisa 
-export const getaProduct = async () => {};
+// Implementación de getaProduct
+export const getaProduct = async (idProduct, idAdmin) => {
+  try {
+    const findProduct = await prisma.product.findUnique({
+      where: {
+        id: Number(idProduct),
+        userId: Number(idAdmin),
+      },
+    });
+
+    if (!findProduct) return ["no se encontro el producto"];
+    return findProduct;
+    
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 //tarea de monse
 export const deleteProduct = async (idAdmin, idProduct) => {

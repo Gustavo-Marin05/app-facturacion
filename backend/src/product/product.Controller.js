@@ -1,4 +1,4 @@
-import { createProduct, getAllProducts, updateProduct } from "./productService.js";
+import { createProduct, getAllProducts, getaProduct, updateProduct } from "./productService.js";
 
 export const createProductController =async (req,res)=>{
 
@@ -22,9 +22,15 @@ try {
 
 
 //tarea de caisa
-export const getaProductController =async (req,res)=>{
-
-}
+// Implementación de getaProductController
+export const getaProductController = async (req, res) => {
+    try {
+      const product = await getaProduct(req.params.id, req.user.id);
+      res.status(200).json(product);
+    } catch (error) {
+      res.status(400).json({ message: "Error en getaProduct" });
+    }
+};
 
 
 //tarea de monse
