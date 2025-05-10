@@ -10,6 +10,13 @@ import invoiceRoutes from './invoice/invoice.Routes.js'
 
 const app = express();
 
+import swaggerUi from "swagger-ui-express";
+import fs from 'fs';
+
+const swaggerDocumentation = JSON.parse(
+  fs.readFileSync(new URL('../swagger.json', import.meta.url), 'utf8')
+);
+    
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
@@ -21,5 +28,5 @@ app.use('/api',customerRoutes)
 app.use('/api',productRoutes)
 app.use('/api',invoiceRoutes)
 
-
+app.use('/doc',swaggerUi.serve,swaggerUi.setup(swaggerDocumentation))
 export default app;
