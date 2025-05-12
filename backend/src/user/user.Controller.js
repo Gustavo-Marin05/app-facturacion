@@ -5,10 +5,10 @@ export const userCreate = async (req, res) => {
     //es con metododo post , solo el usuario tipo admin podra crear el usuario tipo user
     //el usuario tipo user no podra crear otro usuario
     //este suario creado solo tendra acceso a la facturacion
-    const {fullName,ci,password}=req.body
+    const {fullName,email,ci,password}=req.body
 
     try {
-        const user = await createUser(req.user.id, {fullName,ci,password});
+        const user = await createUser(req.user.id, {fullName,email,ci,password});
         res.status(200).json(user);
 
     } catch (error) {
@@ -53,7 +53,7 @@ export const updateUser = async (req, res) => {
     const {fullName,ci,password}=req.body
 
     try {
-        const user = await updateUserById(req.user.id, req.params.id, {fullName,ci,password});
+        const user = await updateUserById(req.user.id, req.params.id, {fullName,email,ci,password});
         res.status(200).json(user);
     } catch (error) {
         res.status(400).json('error en updateproductbyid ');

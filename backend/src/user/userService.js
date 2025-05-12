@@ -5,15 +5,15 @@ import bcrypt from 'bcryptjs'
 //funcion para crear un usuario 
 export const createUser = async (idAdmin, data) => {
     try {
-        const { fullName, ci, password, role } = data;
+        const { fullName,email, ci, password, role } = data;
 
-        if (!fullName || !ci || !password) {
+        if (!fullName || !email || !ci || !password) {
             return { error: "required" };
         }
 
         // Verificar si el usuario ya existe
         const userFound = await prisma.user.findUnique({
-            where: { ci: ci, role: 'USER' }
+            where: { email: email, role: 'USER' }
         });
 
         if (userFound) return ['user already exists'];
@@ -25,6 +25,7 @@ export const createUser = async (idAdmin, data) => {
         const newUser = await prisma.user.create({
             data: {
                 fullName,
+                email,
                 ci,
                 password: passwordHash,
                 role: role || 'USER',
@@ -35,6 +36,7 @@ export const createUser = async (idAdmin, data) => {
         return {
             id: newUser.id,
             fullName: newUser.fullName,
+            email:newUser.email,
             ci: newUser.ci,
             role: newUser.role,
             idAdmin: newUser.idAdmin,
