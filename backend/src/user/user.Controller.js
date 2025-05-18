@@ -29,7 +29,6 @@ export const getUser = async (req, res) => {
         res.status(400).json({ error: "Error al obtener usuario" });
     }
 
-
 }
 
 export const getUsers = async (req, res) => {
@@ -50,7 +49,7 @@ export const updateUser = async (req, res) => {
     //esta funcion solo actualizara un usuario mientras el user tipo admin este logeado
     //el user tipo user no podra actualizar un usuario
 
-    const {fullName,ci,password}=req.body
+    const {fullName,email,ci,password}=req.body
 
     try {
         const user = await updateUserById(req.user.id, req.params.id, {fullName,email,ci,password});

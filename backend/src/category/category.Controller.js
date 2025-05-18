@@ -9,8 +9,6 @@ export const getaCategoryController = async (req, res) => {
         res.status(500).json('error en getacategory');
     }
 }
-
-
 //Nuevo controlador para actualizar categoria
 export const updateCategoryController = async (req, res) => {
     try{

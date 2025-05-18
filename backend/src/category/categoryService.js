@@ -77,20 +77,6 @@ export const updateCategory = async (idAdmin, idCategory, newData) => {
   }
 };
 
-//funcion para borrar una categoria
-
-export const deleteCategory = async (idCategory) => {
-  try {
-    const categoryDelete = await prisma.category.delete({
-      where: {
-        id: Number(idCategory),
-      },
-    });
-    return categoryDelete;
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 // Función para crear una categoría
 export const createCategory = async (idAdmin, data) => {
@@ -132,6 +118,20 @@ export const createCategory = async (idAdmin, data) => {
   }
 };
 
+//funcion para borrar una categoria
+
+export const deleteCategory = async (idCategory) => {
+  try {
+    const categoryDelete = await prisma.category.delete({
+      where: {
+        id: Number(idCategory),
+      },
+    });
+    return categoryDelete;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 
 export const findCategoryById = async (id) => {
