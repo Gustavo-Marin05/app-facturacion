@@ -19,3 +19,11 @@ export const isAuthenticated = (req, res, next) => {
   }
   next();
 };
+
+
+export const isAdminOrCompany = (req, res, next) => {
+  if ((req.user && req.user.role === "ADMIN") || req.company) {
+    return next();
+  }
+  return res.status(403).json({ message: "Se requiere rol de administrador o empresa" });
+};

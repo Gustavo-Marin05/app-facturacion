@@ -1,17 +1,34 @@
 import jwt from "jsonwebtoken";
-import { TOKEN_SECRET } from "../config.js"; 
+import { TOKEN_SECRET } from "../config.js";
+import { prisma } from "../db.js";
 
-export const authRequired = (req, res, next) => {
-    const { token } = req.cookies;
-    
-    if (!token) return res.status(401).json({ message: "No tiene autorización" });
+export const authRequired = async (req, res, next) => {
+  const { token } = req.cookies;
 
-    jwt.verify(token, TOKEN_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ message: "Token no validado" });
+  if (!token) return res.status(401).json({ message: "No tiene autorización" });
 
-       // console.log("Usuario autenticado desde el token:", user); // 🔍 Debug: Verificar contenido del token
+  try {
+    const decoded = jwt.verify(token, TOKEN_SECRET);
 
-        req.user = user;
-        next();
-    });
+    // Buscar si es un usuario
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    if (user) {
+      req.user = user;
+      req.role = user.role;
+      return next();
+    }
+
+    // Buscar si es una empresa
+    const company = await prisma.producerCompany.findUnique({ where: { id: decoded.id } });
+    if (company) {
+      req.company = company;
+      req.user = company; // ← ESTA ES LA LÍNEA CLAVE QUE FALTA
+      req.role = "PRODUCER";
+      return next();
+    }
+
+    return res.status(401).json({ message: "Entidad no encontrada" });
+  } catch (error) {
+    return res.status(403).json({ message: "Token no validado" });
+  }
 };

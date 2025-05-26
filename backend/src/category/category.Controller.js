@@ -3,22 +3,28 @@ import { createCategory } from "./categoryService.js";
 
 export const getaCategoryController = async (req, res) => {
     try {
-        const category =await getaCategory(req.user.id, req.params.id);
+        const category = await getaCategory(req.user, req.company, req.params.id);
+        
+        if (category.error) {
+            return res.status(403).json({ message: category.error });
+        }
+        
         res.status(200).json(category);
     } catch (error) {
-        res.status(500).json('error en getacategory');
+        console.error("Error en getaCategoryController:", error);
+        res.status(500).json({ message: "Error interno del servidor." });
     }
 }
-
 
 //Nuevo controlador para actualizar categoria
 export const updateCategoryController = async (req, res) => {
     try{
         const { id } = req.params; //ID de la categoria a modificar
-        const idAdmin = req.user.id; // ID del admin autenticado (desde el middleware de autenticacion)
+        const user = req.user; // Usuario autenticado (si es admin)
+        const company = req.company; // Empresa autenticada (si es producer)
         const newData = req.body; // Datos de la categoria a actualizar 
 
-        const updatedCategory = await updateCategory(idAdmin, id, newData);
+        const updatedCategory = await updateCategory(user, company, id, newData);
         
         if(updatedCategory.error){
             return res.status(400).json({ error: updatedCategory.error });
@@ -26,47 +32,55 @@ export const updateCategoryController = async (req, res) => {
 
         res.status(200).json(updatedCategory);
     } catch (error){
-        res.status(500).json({ error: 'Error al actualizar la categoria' });
+        console.error("Error en updateCategoryController:", error);
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 };
 
 //controlador para obtener todas las categorias
 export const getAllCategoriesController = async (req, res) => {
+  try {
+    const categories = await getAllCategories(req.user, req.company);
+
+    if (categories.error) {
+      return res.status(403).json({ message: categories.error });
+    }
+
+    res.status(200).json(categories);
+  } catch (error) {
+    console.error("Error en getAllCategoriesController:", error);
+    res.status(500).json({ message: "Error interno del servidor." });
+  }
+};
+
+//controlador para borrar categoria
+export const deleteCategoryController = async (req, res) => {
     try {
+        const category = await deleteCategory(req.user, req.company, req.params.id);
         
-        const category=await getAllCategories(req.user.id);
+        if (category.error) {
+            return res.status(403).json({ message: category.error });
+        }
+        
         res.status(200).json(category);
     } catch (error) {
-        res.status(400).json('error en getallcategories')
-        
-    }
-}
-
-//controlador para borrar todas las categorias
-export const deleteCategoryController =async (req,res)=>{
-    try {
-        const category =await deleteCategory(req.params.id);
-        res.status(200).json(category)
-    } catch (error) {
-        res.status(400).json('error en deletecategory')
+        console.error("Error en deleteCategoryController:", error);
+        res.status(500).json({ message: "Error interno del servidor." });
     }
 }
 
 // Controlador para crear una categoría
 export const createCategoryController = async (req, res) => {
-    try {
-        const idAdmin = req.user.id; // ID del administrador autenticado
-        const data = req.body; // Datos de la categoría a crear
+  try {
+    const category = await createCategory(req.body, req.user, req.company);
 
-        const newCategory = await createCategory(idAdmin, data);
-
-        if (newCategory.error) {
-            return res.status(400).json({ error: newCategory.error });
-        }
-
-        res.status(200).json(newCategory);
-    } catch (error) {
-        res.status(500).json({ error: 'Error al crear la categoría.' });
+    if (category.error) {
+      return res.status(403).json({ message: category.error });
     }
-};
 
+    res.status(201).json(category);
+  } catch (error) {
+    console.error("Error en createCategoryController:", error);
+    res.status(500).json({ message: "Error interno del servidor." });
+  }
+};

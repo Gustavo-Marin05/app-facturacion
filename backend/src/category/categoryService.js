@@ -1,68 +1,83 @@
 import { prisma } from "../db.js";
 
 //funcion para obtener una categoria
-export const getaCategory = async (idAdmin, idCategory) => {
+export const getaCategory = async (user, company, idCategory) => {
   try {
+    let filter = { id: Number(idCategory) };
+
+    if (user && user.role === "ADMIN") {
+      filter.userId = user.id;
+    } else if (company && company.role === "PRODUCER") {
+      filter.companyId = company.id;
+    } else {
+      return { error: "Rol no autorizado para obtener categoría." };
+    }
+
     const categoryFound = await prisma.category.findFirst({
-      where: {
-        id: Number(idCategory),
-        userId: idAdmin,
-      },
+      where: filter,
       include: {
-        user: true,
-        products: true,
+        User: true,      // Relación con User (mayúscula)
+        Product: true,   // Relación con Product (mayúscula)
       },
     });
 
-    if (!categoryFound) return ["category not foound"];
+    if (!categoryFound) return { error: "Categoría no encontrada." };
 
     return categoryFound;
   } catch (error) {
-    console.log(error);
+    console.error("Error al obtener categoría:", error);
+    return { error: "Error interno del servidor." };
   }
 };
 
-//funcion para obtener toas las categorias
-export const getAllCategories = async (idAdmin) => {
+//funcion para obtener todas las categorias
+export const getAllCategories = async (user, company) => {
   try {
+    let filter = {};
+
+    if (user && user.role === "ADMIN") {
+      filter = { userId: user.id };
+    } else if (company && company.role === "PRODUCER") {
+      filter = { companyId: company.id };
+    } else {
+      return { error: "Rol no autorizado para obtener categorías." };
+    }
+
     const categories = await prisma.category.findMany({
-      where: {
-        userId: idAdmin,
-      },
+      where: filter,
       include: {
-        user: {
-          select: {
-            id: true,
-            fullName: true,
-            ci: true,
-            role: true,
-            idAdmin: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-        products: true,
+        Product: true,
       },
     });
 
     return categories;
   } catch (error) {
-    console.log(error);
+    console.error("Error al obtener categorías:", error);
+    return { error: "Error interno del servidor." };
   }
 };
 
 //funcion para actualizar una categoria
-export const updateCategory = async (idAdmin, idCategory, newData) => {
+export const updateCategory = async (user, company, idCategory, newData) => {
   try {
-    // Verificar si la categoría existe y pertenece al admin
+    let filter = { id: Number(idCategory) };
+
+    if (user && user.role === "ADMIN") {
+      filter.userId = user.id;  // Solo el admin dueño puede modificar
+    } else if (company && company.role === "PRODUCER") {
+      filter.companyId = company.id;  // Solo el productor dueño puede modificar
+    } else {
+      return { error: "Rol no autorizado para actualizar categoría." };
+    }
+
+    // Verificar si la categoría existe y pertenece al usuario/empresa
     const categoryFound = await prisma.category.findFirst({
-      where: {
-        id: Number(idCategory),
-        userId: idAdmin, // Solo el admin dueño puede modificarla
-      },
+      where: filter,
     });
 
-    if (!categoryFound) return ["Category not found or unauthorized"];
+    if (!categoryFound) {
+      return { error: "Categoría no encontrada o sin autorización." };
+    }
 
     // Actualizar la categoría con los nuevos datos
     const updatedCategory = await prisma.category.update({
@@ -72,15 +87,33 @@ export const updateCategory = async (idAdmin, idCategory, newData) => {
 
     return updatedCategory;
   } catch (error) {
-    console.log(error);
-    return { error: "Error updating category" };
+    console.error("Error al actualizar categoría:", error);
+    return { error: "Error interno al actualizar la categoría." };
   }
 };
 
 //funcion para borrar una categoria
-
-export const deleteCategory = async (idCategory) => {
+export const deleteCategory = async (user, company, idCategory) => {
   try {
+    let filter = { id: Number(idCategory) };
+
+    if (user && user.role === "ADMIN") {
+      filter.userId = user.id;
+    } else if (company && company.role === "PRODUCER") {
+      filter.companyId = company.id;
+    } else {
+      return { error: "Rol no autorizado para eliminar categoría." };
+    }
+
+    // Verificar si la categoría existe y pertenece al usuario/empresa
+    const categoryFound = await prisma.category.findFirst({
+      where: filter,
+    });
+
+    if (!categoryFound) {
+      return { error: "Categoría no encontrada o sin autorización." };
+    }
+
     const categoryDelete = await prisma.category.delete({
       where: {
         id: Number(idCategory),
@@ -88,51 +121,34 @@ export const deleteCategory = async (idCategory) => {
     });
     return categoryDelete;
   } catch (error) {
-    console.log(error);
-  }
-};
-
-// Función para crear una categoría
-export const createCategory = async (idAdmin, data) => {
-  try {
-    const { name } = data;
-
-    // Validar que el campo obligatorio 'name' esté presente
-    if (!name) {
-      return { error: "El nombre de la categoría es obligatorio." };
-    }
-
-    // Verificar si ya existe una categoría con el mismo nombre para el mismo administrador
-    const categoryFound = await prisma.category.findFirst({
-      where: {
-        name: name,
-        userId: idAdmin,
-      },
-    });
-
-    if (categoryFound) {
-      return { error: "La categoría ya existe." };
-    }
-
-    // Crear la nueva categoría
-    const newCategory = await prisma.category.create({
-      data: {
-        name,
-        userId: idAdmin,
-      },
-    });
-
-    return {
-      id: newCategory.id,
-      name: newCategory.name,
-    };
-  } catch (error) {
-    console.error("Error al crear la categoría:", error);
+    console.error("Error al eliminar categoría:", error);
     return { error: "Error interno del servidor." };
   }
 };
 
+// Función para crear una categoría
+export const createCategory = async (data, user, company) => {
+  try {
+    let categoryData = { name: data.name };
 
+    if (user && user.role === "ADMIN") {
+      categoryData.userId = user.id;
+    } else if (company && company.role === "PRODUCER") {
+      categoryData.companyId = company.id;
+    } else {
+      return { error: "Rol no autorizado para crear categorías." };
+    }
+
+    const newCategory = await prisma.category.create({
+      data: categoryData,
+    });
+
+    return newCategory;
+  } catch (error) {
+    console.error("Error al crear categoría:", error);
+    return { error: "Error interno del servidor." };
+  }
+};
 
 export const findCategoryById = async (id) => {
   try {

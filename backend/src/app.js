@@ -7,7 +7,9 @@ import categoryRoutes from "./category/category.Routes.js";
 import customerRoutes from "./customer/customer.Routes.js";
 import productRoutes from "./product/product.Routes.js";
 import invoiceRoutes from "./invoice/invoice.Routes.js";
+import authCompanyRoutes from './authCompany/authCompany.Routes.js'
 import cors from "cors"; // Importa cors
+
 
 const app = express();
 
@@ -36,6 +38,7 @@ app.use("/api", categoryRoutes);
 app.use("/api", customerRoutes);
 app.use("/api", productRoutes);
 app.use("/api", invoiceRoutes);
+app.use("/api",authCompanyRoutes)
 
 app.use("/doc", swaggerUi.serve, swaggerUi.setup(swaggerDocumentation));
 export default app;
