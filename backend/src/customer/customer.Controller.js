@@ -1,5 +1,5 @@
 
-import { createCustomer,deleteCustomer, getaCustomer, getAllCustomer, updateCustomerById } from "./customerService.js";
+import { createCustomer,deleteCustomer, findCustomerByCiAndUserId, getaCustomer, getAllCustomer, updateCustomerById } from "./customerService.js";
 
 // Crear un cliente
 export const createCustomerController = async (req, res) => {
@@ -61,6 +61,26 @@ export const updateCustomerController = async (req, res) => {
 
     res.status(200).json(updatedCustomer);
   } catch (error) {
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
+
+
+
+export const getCustomerByCi = async (req, res) => {
+  const { ci } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const customer = await findCustomerByCiAndUserId(ci, userId);
+
+    if (!customer) {
+      return res.status(404).json({ message: "Cliente no encontrado" });
+    }
+
+    res.json(customer);
+  } catch (error) {
+    console.error("Error al buscar cliente por CI:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };

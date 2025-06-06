@@ -112,3 +112,13 @@ export const updateCustomerById = async (idAdmin, customerId, data) => {
     return { error: "Error interno del servidor" };
   }
 };
+
+
+export const findCustomerByCiAndUserId = async (ci, userId) => {
+  return await prisma.customer.findFirst({
+    where: {
+      ci,
+      userId,
+    },
+  });
+};
