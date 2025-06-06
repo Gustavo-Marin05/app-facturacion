@@ -18,11 +18,11 @@ export const authRequired = async (req, res, next) => {
       return next();
     }
 
-    // Buscar si es una empresa
+    // Buscar si es una empresa/productora
     const company = await prisma.producerCompany.findUnique({ where: { id: decoded.id } });
     if (company) {
       req.company = company;
-      req.user = company; // ← ESTA ES LA LÍNEA CLAVE QUE FALTA
+      req.user = company; // ← línea clave para que funcione con isAuthenticated
       req.role = "PRODUCER";
       return next();
     }
