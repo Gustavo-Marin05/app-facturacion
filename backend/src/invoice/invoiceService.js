@@ -30,13 +30,12 @@ export const createInvoice = async (userId, data) => {
 
     const invoiceDetails = await Promise.all(
       products.map(async (item) => {
+        const quantity = parseInt(item.quantity, 10); // 👈 convierte a número
+
         const product = await tx.product.findFirst({
           where: {
             id: Number(item.productId),
-            OR: [
-              { userId: userId }, // producto creado por el mismo usuario
-              { userId: currentUser.idAdmin ?? -1 }, // producto creado por su admin (si tiene)
-            ],
+            OR: [{ userId: userId }, { userId: currentUser.idAdmin ?? -1 }],
           },
         });
 
@@ -46,22 +45,22 @@ export const createInvoice = async (userId, data) => {
           );
         }
 
-        if (product.stock < item.quantity) {
+        if (product.stock < quantity) {
           throw new Error(
             `Stock insuficiente para el producto ${product.name}`
           );
         }
 
-        const subtotal = product.price * item.quantity;
+        const subtotal = product.price * quantity;
 
         await tx.product.update({
           where: { id: Number(item.productId) },
-          data: { stock: { decrement: item.quantity } },
+          data: { stock: { decrement: quantity } }, // ✅ ahora es un número
         });
 
         return {
           productId: Number(item.productId),
-          quantity: item.quantity,
+          quantity: quantity,
           subtotal: subtotal,
         };
       })

@@ -28,7 +28,7 @@ export const createUser = async (idAdmin, data) => {
                 email,
                 ci,
                 password: passwordHash,
-                role: role || 'USER',
+                role:'USER',
                 idAdmin: idAdmin // Relacionar con el ADMIN que lo creó
             }
         });

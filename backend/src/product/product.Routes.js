@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authRequired } from "../middleware/validateToken.js";
-import { isAdmin, isAuthenticated } from "../middleware/roleMiddleware.js";
+import { isAdminOrCompany, isAuthenticated } from "../middleware/roleMiddleware.js";
 import {
   createProductController,
   getAllProductController,
@@ -11,10 +11,10 @@ import {
 
 const router = Router();
 
-router.post("/product", authRequired, isAdmin, createProductController);
+router.post("/product", authRequired, isAdminOrCompany, createProductController);
 router.get("/product", authRequired, isAuthenticated, getAllProductController);
 router.get("/product/:id", authRequired, isAuthenticated, getaProductController);
-router.put("/product/:id", authRequired, isAdmin, updateProductController);
-router.delete("/product/:id", authRequired, isAdmin, deleteProductController);
+router.put("/product/:id", authRequired, isAdminOrCompany, updateProductController);
+router.delete("/product/:id", authRequired, isAdminOrCompany, deleteProductController);
 
 export default router;
