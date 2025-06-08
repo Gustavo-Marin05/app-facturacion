@@ -14,12 +14,11 @@ const app = express();
 // CORS configuration
 const corsOptions = {
   origin: [
-    //"http://localhost:5173", // Tu frontend local
-    "https://todito-jas4.onrender.com" // Tu frontend en producción
-  ], // Asegúrate de que el frontend está en este puerto
+    "http://localhost:5173", // Para desarrollo local
+    "https://todito-jas4.onrender.com" // ✅ URL correcta de tu frontend
+  ],
   credentials: true,
 };
-
 app.use(cors(corsOptions)); // Aplica la configuración de CORS
 
 import swaggerUi from "swagger-ui-express";
