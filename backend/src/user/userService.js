@@ -78,6 +78,7 @@ export const getAllUsers = async (idAdmin) => {
     try {
         const users = await prisma.user.findMany({
             where: {
+               
                 idAdmin: idAdmin
             }
         });

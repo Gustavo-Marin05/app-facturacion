@@ -1,6 +1,7 @@
 import { prisma } from "../db.js";
 
 
+
 // Crear cliente
 export const createCustomer = async (userId, data) => {
   try {
@@ -8,14 +9,14 @@ export const createCustomer = async (userId, data) => {
       data: {
         fullName: data.fullName,
         ci: data.ci,
-        userId: userId, 
+        userId: userId,
       },
     });
     return {
       id: newCustomer.id,
       fullName: newCustomer.fullName,
       ci: newCustomer.ci,
-      userId: newCustomer.userId
+      userId: newCustomer.userId,
     };
   } catch (error) {
     console.error("Error al crear cliente:", error);
@@ -25,38 +26,56 @@ export const createCustomer = async (userId, data) => {
 
 //obtener todos los clientes
 
-export const getAllCustomer = async (userId) => {
+export const getAllCustomer = async (adminId) => {
   try {
-    const customer = await prisma.customer.findMany({
+    const users = await prisma.user.findMany({
       where: {
-        userId: userId,
+        role: "USER",
+        idAdmin: adminId,
       },
     });
-    if (!customer) return ["no hay clientes"];
-    return customer;
+   
+
+    if (users.length === 0) return [];
+
+    const userIds = users.map((user) => user.id);
+
+    const customers = await prisma.customer.findMany({
+      where: {
+        userId: { in: userIds },
+      },
+    });
+
+    return customers;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 };
 
+
 //obtener solo un cliente
-export const getaCustomer = async (idCustomer, idUser) => {
+export const getaCustomer = async (idCustomer) => {
   try {
-    const findCustomer = await prisma.customer.findUnique({
+    const findCustomer = await prisma.customer.findFirst({
       where: {
         id: Number(idCustomer),
-        userId: Number(idUser),
+       
       },
+      include:{
+
+        invoices:true
+      }
     });
 
-    if (!findCustomer) return ["no se encontro el cliente"];
+   if (!findCustomer) return null;
+
 
     return findCustomer;
   } catch (error) {
     console.log(error);
   }
 };
-
 
 //borrar un cliente
 export const deleteCustomer = async (idUser, idCustomer) => {
@@ -67,7 +86,7 @@ export const deleteCustomer = async (idUser, idCustomer) => {
       },
     });
 
-    if (!findCustomer) return ['customer not found'];
+    if (!findCustomer) return ["customer not found"];
 
     const deleteCustomer = await prisma.customer.delete({
       where: {
@@ -112,7 +131,6 @@ export const updateCustomerById = async (idAdmin, customerId, data) => {
     return { error: "Error interno del servidor" };
   }
 };
-
 
 export const findCustomerByCiAndUserId = async (ci, userId) => {
   return await prisma.customer.findFirst({

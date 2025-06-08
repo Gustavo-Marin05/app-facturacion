@@ -7,13 +7,18 @@ export const createInvoice = async (userId, data) => {
     throw new Error("ID de usuario no proporcionado");
   }
 
-  // Obtener el usuario actual (para acceder a su idAdmin)
+  // Obtener usuario para el NIT (aquí ci es tu NIT)
   const currentUser = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, idAdmin: true },
+    select: { id: true, idAdmin: true, ci: true },
   });
 
+  if (!currentUser) {
+    throw new Error("Usuario no encontrado");
+  }
+
   return await prisma.$transaction(async (tx) => {
+    // Buscar o crear cliente
     let customer = await tx.customer.findUnique({
       where: { ci: customerCi },
     });
@@ -23,19 +28,20 @@ export const createInvoice = async (userId, data) => {
         data: {
           fullName: customerFullName,
           ci: customerCi,
-          userId: userId,
+          userId,
         },
       });
     }
 
+    // Crear detalles con validación stock y permisos
     const invoiceDetails = await Promise.all(
       products.map(async (item) => {
-        const quantity = parseInt(item.quantity, 10); // 👈 convierte a número
+        const quantity = parseInt(item.quantity, 10);
 
         const product = await tx.product.findFirst({
           where: {
             id: Number(item.productId),
-            OR: [{ userId: userId }, { userId: currentUser.idAdmin ?? -1 }],
+            OR: [{ userId }, { userId: currentUser.idAdmin ?? -1 }],
           },
         });
 
@@ -55,30 +61,45 @@ export const createInvoice = async (userId, data) => {
 
         await tx.product.update({
           where: { id: Number(item.productId) },
-          data: { stock: { decrement: quantity } }, // ✅ ahora es un número
+          data: { stock: { decrement: quantity } },
         });
 
         return {
           productId: Number(item.productId),
-          quantity: quantity,
-          subtotal: subtotal,
+          quantity,
+          subtotal,
         };
       })
     );
 
-    const total = invoiceDetails.reduce(
-      (sum, detail) => sum + detail.subtotal,
+    // Calcular subtotal, impuesto y total
+    const subtotalTotal = invoiceDetails.reduce(
+      (sum, d) => sum + d.subtotal,
       0
     );
+    const tax = parseFloat((subtotalTotal * 0.13).toFixed(2)); // 13% IVA
+    const total = parseFloat((subtotalTotal + tax).toFixed(2));
 
+    // Obtener último número de factura para usuario y asignar siguiente
+    const lastInvoice = await tx.invoice.findFirst({
+      where: { userId },
+      orderBy: { number: "desc" },
+      select: { number: true },
+    });
+    const nextInvoiceNumber = lastInvoice ? lastInvoice.number + 1 : 1;
+
+    // Crear factura con los nuevos campos
     const invoice = await tx.invoice.create({
       data: {
         customerId: customer.id,
-        total: total,
+        total,
+        tax,
+        number: nextInvoiceNumber,
+        nit: customerCi,
         details: {
           create: invoiceDetails,
         },
-        userId: userId,
+        userId,
       },
       include: {
         details: {
@@ -92,3 +113,35 @@ export const createInvoice = async (userId, data) => {
     return invoice;
   });
 };
+
+export const getAllinvoice = async (adminId) => {
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        role: "USER",
+        idAdmin: adminId,
+      },
+    });
+    if (users.length === 0) return [];
+
+    const userIds = users.map((user) => user.id);
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        userId: { in: userIds },
+      },
+      select: {
+        id: true,
+        userId: true,
+        total: true,
+        createdAt: true, // ✅ asegúrate de incluir esto
+      },
+    });
+
+    return invoices;
+  } catch (error) {
+    console.log(error);
+    return { error: "Error updating category" };
+  }
+};
+
+//esto tendria que devolverme todas las invoices de un solo customer

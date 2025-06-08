@@ -1,32 +1,28 @@
 import { findCategoryById } from "../category/categoryService.js";
 import { prisma } from "../db.js";
 
-export const createProduct = async (data, user, company) => {
+export const createProduct = async (data, user) => {
   try {
     const { name, price, stock, categoryId } = data;
 
     // Verificar autorización
-    if (!user && !company) {
+    if (!user) {
       return { error: "Rol no autorizado para crear productos." };
     }
 
-    // Verificar si la categoria existe
+    // Verificar si la categoría existe
     const categoryFound = await findCategoryById(categoryId);
     if (!categoryFound) return { error: "La categoría no existe." };
 
     // Verificar que la categoría pertenezca al usuario/empresa
-    if (user && user.role === "ADMIN") {
+    if (user.role === "ADMIN") {
       if (categoryFound.userId !== user.id) {
         return { error: "La categoría no pertenece a este administrador." };
       }
-    } else if (company && company.role === "PRODUCER") {
-      if (categoryFound.companyId !== company.id) {
-        return { error: "La categoría no pertenece a esta empresa." };
-      }
     }
 
-    // Verificación de que el nombre del producto no existe para este usuario/empresa
-    const nameExist = await findProductByName(name, user, company);
+    // Verificación de que el nombre del producto no existe para este usuario
+    const nameExist = await findProductByName(name, user);
     if (nameExist) return { error: "El nombre del producto ya existe." };
 
     // Preparar datos del producto
@@ -35,24 +31,14 @@ export const createProduct = async (data, user, company) => {
       price: parseFloat(price),
       stock: parseInt(stock),
       categoryId: categoryFound.id,
+      userId: user.role === "ADMIN" ? user.id : null,
     };
-
-    if (user && user.role === "ADMIN") {
-      // Producto pertenece al admin
-      productData.userId = user.id;
-      // companyId queda undefined (null)
-    } else if (company && company.role === "PRODUCER") {
-      // Producto pertenece a la empresa
-      // userId queda undefined (null)
-      productData.companyId = company.id;
-    }
 
     // Creación del producto
     const newProduct = await prisma.product.create({
       data: productData,
       include: {
         category: true,
-        company: true,
       },
     });
 
@@ -63,21 +49,16 @@ export const createProduct = async (data, user, company) => {
   }
 };
 
-export const getAllProducts = async (user, company) => {
+export const getAllProducts = async (user) => {
   try {
     let filter = {};
 
-    if (user && user.role === "ADMIN") {
-      filter = { userId: user.id, companyId: null };
-    } else if (company && company.role === "PRODUCER") {
-      filter = { companyId: company.id };
-    } else if (user && user.role === "USER") {
-      // Verificar si el usuario tiene admin asignado
+    if (user.role === "ADMIN") {
+      filter = { userId: user.id };
+    } else if (user.role === "USER") {
       if (!user.idAdmin)
         return { error: "El usuario no tiene administrador asignado." };
-
-      // Buscar productos del administrador al que pertenece
-      filter = { userId: user.idAdmin, companyId: null };
+      filter = { userId: user.idAdmin };
     } else {
       return { error: "Rol no autorizado para obtener productos." };
     }
@@ -86,7 +67,6 @@ export const getAllProducts = async (user, company) => {
       where: filter,
       include: {
         category: true,
-        company: true,
       },
     });
 
@@ -97,16 +77,13 @@ export const getAllProducts = async (user, company) => {
   }
 };
 
-export const getaProduct = async (idProduct, user, company) => {
+export const getaProduct = async (idProduct, user) => {
   try {
     let filter = { id: Number(idProduct) };
 
-    if (user && user.role === "ADMIN") {
+    if (user.role === "ADMIN") {
       filter.userId = user.id;
-      filter.companyId = null;
-    } else if (company && company.role === "PRODUCER") {
-      filter.companyId = company.id;
-    } else if (user && user.role === "USER") {
+    } else if (user.role === "USER") {
       filter.userId = user.idAdmin;
     } else {
       return { error: "Rol no autorizado para obtener producto." };
@@ -116,7 +93,6 @@ export const getaProduct = async (idProduct, user, company) => {
       where: filter,
       include: {
         category: true,
-        company: true,
       },
     });
 
@@ -128,9 +104,9 @@ export const getaProduct = async (idProduct, user, company) => {
   }
 };
 
-export const deleteProduct = async (user, company, idProduct) => {
+export const deleteProduct = async (user, idProduct) => {
   try {
-    const findProduct = await findProductById(idProduct, user, company);
+    const findProduct = await findProductById(idProduct, user);
     if (findProduct.error) return findProduct;
 
     const deleteproduct = await prisma.product.delete({
@@ -146,33 +122,29 @@ export const deleteProduct = async (user, company, idProduct) => {
   }
 };
 
-export const updateProduct = async (user, company, idProduct, data) => {
+export const updateProduct = async (user, idProduct, data) => {
   try {
     // Busqueda del producto
-    const findProduct = await findProductById(idProduct, user, company);
+    const findProduct = await findProductById(idProduct, user);
     if (findProduct.error) return findProduct;
 
-    // Si se quiere cambiar la categoría, verificar que pertenezca al usuario/empresa
+    // Si se quiere cambiar la categoría, verificar que pertenezca al usuario
     if (data.categoryId) {
       const categoryFound = await findCategoryById(data.categoryId);
       if (!categoryFound) return { error: "La nueva categoría no existe." };
 
-      if (user && user.role === "ADMIN") {
+      if (user.role === "ADMIN") {
         if (categoryFound.userId !== user.id) {
           return {
             error: "La nueva categoría no pertenece a este administrador.",
           };
-        }
-      } else if (company && company.role === "PRODUCER") {
-        if (categoryFound.companyId !== company.id) {
-          return { error: "La nueva categoría no pertenece a esta empresa." };
         }
       }
     }
 
     // Si se quiere cambiar el nombre, verificar que no exista
     if (data.name && data.name !== findProduct.name) {
-      const nameExist = await findProductByName(data.name, user, company);
+      const nameExist = await findProductByName(data.name, user);
       if (nameExist && nameExist.id !== Number(idProduct)) {
         return { error: "El nombre del producto ya existe." };
       }
@@ -191,7 +163,6 @@ export const updateProduct = async (user, company, idProduct, data) => {
       data: updateData,
       include: {
         category: true,
-        company: true,
       },
     });
 
@@ -203,15 +174,12 @@ export const updateProduct = async (user, company, idProduct, data) => {
 };
 
 // Encontrar un producto por nombre (privada)
-const findProductByName = async (name, user, company) => {
+const findProductByName = async (name, user) => {
   try {
     let filter = { name: name };
 
-    if (user && user.role === "ADMIN") {
+    if (user.role === "ADMIN") {
       filter.userId = user.id;
-      filter.companyId = null;
-    } else if (company && company.role === "PRODUCER") {
-      filter.companyId = company.id;
     }
 
     const find = await prisma.product.findFirst({
@@ -224,15 +192,12 @@ const findProductByName = async (name, user, company) => {
   }
 };
 
-const findProductById = async (id, user, company) => {
+const findProductById = async (id, user) => {
   try {
     let filter = { id: Number(id) };
 
-    if (user && user.role === "ADMIN") {
+    if (user.role === "ADMIN") {
       filter.userId = user.id;
-      filter.companyId = null;
-    } else if (company && company.role === "PRODUCER") {
-      filter.companyId = company.id;
     } else {
       return { error: "Rol no autorizado." };
     }

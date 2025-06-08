@@ -1,4 +1,4 @@
-import { createInvoice } from './invoiceService.js';
+import { createInvoice, getAllinvoice } from './invoiceService.js';
 
 export const createInvoiceController = async (req, res) => {
   try {
@@ -15,3 +15,15 @@ export const createInvoiceController = async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };
+
+
+export const getAllInvoiceController =async (req,res)=>{
+  try {
+    const invoice = await getAllinvoice(req.user.id);
+    res.status(200).json(invoice);
+    
+  } catch (error) {
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+

@@ -8,8 +8,6 @@ import { createCustomerController, deleteCustomerController, getaCustomerControl
 const router =Router();
 
 router.post('/customer',authRequired,isAuthenticated,createCustomerController);
-
-
 router.get('/customer',authRequired,isAuthenticated,getAllCustomerController);
 router.get('/customer/:id',authRequired,isAuthenticated,getaCustomerController)
 router.put("/customer/:id", authRequired, isAuthenticated, updateCustomerController);
