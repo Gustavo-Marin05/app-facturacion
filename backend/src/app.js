@@ -13,7 +13,10 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-  origin: "http://localhost:5173", // Asegúrate de que el frontend está en este puerto
+  origin: [
+    //"http://localhost:5173", // Tu frontend local
+    "https://Todito.onrender.com" // Tu frontend en producción
+  ], // Asegúrate de que el frontend está en este puerto
   credentials: true,
 };
 
