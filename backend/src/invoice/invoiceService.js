@@ -201,7 +201,7 @@ export const generateInvoicePdf = async (invoiceId, res) => {
   invoice.details.forEach((item) => {
     const description = item.product?.name || item.description || "Sin descripción";
     const qty = item.quantity || 1;
-    const price = item.price ?? (item.subtotal / qty);
+    const price = item.subtotal ;
     const subtotal = qty * price;
 
     doc.text(qty.toString(), 50, y);
