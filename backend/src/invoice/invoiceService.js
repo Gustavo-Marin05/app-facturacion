@@ -1,5 +1,7 @@
 import { prisma } from "../db.js";
 
+import PDFDocument from "pdfkit";
+
 export const createInvoice = async (userId, data) => {
   const { customerCi, customerFullName, products } = data;
 
@@ -145,3 +147,88 @@ export const getAllinvoice = async (adminId) => {
 };
 
 //esto tendria que devolverme todas las invoices de un solo customer
+
+//funcion para poder generar el invoice en un pdf
+export const generateInvoicePdf = async (invoiceId, res) => {
+  const invoice = await prisma.invoice.findFirst({
+    where: { id: invoiceId },
+    include: {
+      customer: true,
+      details: {
+        include: {
+          product: true,
+        },
+      },
+    },
+  });
+
+  if (!invoice) {
+    throw new Error("Factura no encontrada");
+  }
+
+  const doc = new PDFDocument({ margin: 50 });
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    `inline; filename=factura-${invoice.number}.pdf`
+  );
+  doc.pipe(res);
+
+  // Encabezado
+  doc.fontSize(22).fillColor("#333").text("factura", { align: "center" }).moveDown(0.5);
+  doc.moveTo(50, 100).lineTo(545, 100).stroke();
+
+  // Datos del cliente
+  doc.fontSize(16).fillColor("#000").text(`Nro:${invoice.number}`, 400, 110);
+  doc.fontSize(12).fillColor("#555")
+    .text(`Fecha: ${new Date(invoice.createdAt).toLocaleDateString()}`, 50, 120)
+    .text(`Cliente: ${invoice.customer.fullName}`, 50, 140)
+    .text(`CI/NIT: ${invoice.customer.ci}`, 50, 160);
+
+  // Tabla
+  let y = 190;
+  doc.fontSize(12).font("Helvetica-Bold");
+  doc.text("Cantidad", 50, y);
+  doc.text("Descripción", 120, y);
+  doc.text("Precio Unitario", 350, y, { width: 90, align: "right" });
+  doc.text("Subtotal", 450, y, { width: 90, align: "right" });
+
+  y += 20;
+  doc.moveTo(50, y - 5).lineTo(545, y - 5).stroke();
+  doc.font("Helvetica");
+
+  // CORRECTO: recorrer `details`, no `items`
+  invoice.details.forEach((item) => {
+    const description = item.product?.name || item.description || "Sin descripción";
+    const qty = item.quantity || 1;
+    const price = item.price ?? (item.subtotal / qty);
+    const subtotal = qty * price;
+
+    doc.text(qty.toString(), 50, y);
+    doc.text(description, 120, y);
+    doc.text(`Bs ${price.toFixed(2)}`, 350, y, { width: 90, align: "right" });
+    doc.text(`Bs ${subtotal.toFixed(2)}`, 450, y, { width: 90, align: "right" });
+    y += 20;
+  });
+
+  // Totales
+  doc.moveTo(50, y).lineTo(545, y).stroke();
+  y += 10;
+  doc.font("Helvetica-Bold");
+  doc.text("Subtotal:", 350, y, { width: 90, align: "right" });
+  doc.text(`Bs ${(invoice.total - invoice.tax).toFixed(2)}`, 450, y, { width: 90, align: "right" });
+  y += 20;
+  doc.text("IVA (13%):", 350, y, { width: 90, align: "right" });
+  doc.text(`Bs ${invoice.tax.toFixed(2)}`, 450, y, { width: 90, align: "right" });
+  y += 20;
+  doc.text("Total:", 350, y, { width: 90, align: "right" });
+  doc.text(`Bs ${invoice.total.toFixed(2)}`, 450, y, { width: 90, align: "right" });
+
+  // Pie
+  doc.fontSize(10).fillColor("#999").text("Gracias por su compra. ¡Vuelva pronto!", 50, 700, {
+    align: "center",
+    width: 495,
+  });
+
+  doc.end();
+};

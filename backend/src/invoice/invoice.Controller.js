@@ -1,4 +1,4 @@
-import { createInvoice, getAllinvoice } from './invoiceService.js';
+import { createInvoice, generateInvoicePdf, getAllinvoice } from './invoiceService.js';
 
 export const createInvoiceController = async (req, res) => {
   try {
@@ -27,3 +27,20 @@ export const getAllInvoiceController =async (req,res)=>{
   }
 }
 
+
+//controlador de como 
+
+export const downloadInvoicePdfController = async (req, res) => {
+  const invoiceId = Number(req.params.id);
+
+  if (isNaN(invoiceId)) {
+    return res.status(400).json({ error: "ID de factura inválido" });
+  }
+
+  try {
+    await generateInvoicePdf(invoiceId, res);
+  } catch (error) {
+    console.error("Error al generar el PDF:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
