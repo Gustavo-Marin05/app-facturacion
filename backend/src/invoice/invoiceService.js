@@ -163,10 +163,15 @@ export const generateInvoicePdf = async (invoiceId, res) => {
   });
 
   if (!invoice) {
-    throw new Error("Factura no encontrada");
+    res.status(404).send("Factura no encontrada");
+    return;
   }
 
-  const doc = new PDFDocument({ margin: 50 });
+  const doc = new PDFDocument({
+    size: [226.77, 700], // 80mm x alto
+    margin: 10,
+  });
+
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader(
     "Content-Disposition",
@@ -175,60 +180,79 @@ export const generateInvoicePdf = async (invoiceId, res) => {
   doc.pipe(res);
 
   // Encabezado
-  doc.fontSize(22).fillColor("#333").text("factura", { align: "center" }).moveDown(0.5);
-  doc.moveTo(50, 100).lineTo(545, 100).stroke();
+  doc
+    .fontSize(16)
+    .fillColor("#000")
+    .text("FACTURA", { align: "center" })
+    .moveDown(0.5);
 
-  // Datos del cliente
-  doc.fontSize(16).fillColor("#000").text(`Nro:${invoice.number}`, 400, 110);
-  doc.fontSize(12).fillColor("#555")
-    .text(`Fecha: ${new Date(invoice.createdAt).toLocaleDateString()}`, 50, 120)
-    .text(`Cliente: ${invoice.customer.fullName}`, 50, 140)
-    .text(`CI/NIT: ${invoice.customer.ci}`, 50, 160);
+  // Cliente
+  doc
+    .fontSize(10)
+    .fillColor("#000")
+    .text(`Nro: ${invoice.number}`)
+    .text(`Fecha: ${new Date(invoice.createdAt).toLocaleDateString()}`)
+    .text(`Cliente: ${invoice.customer.fullName}`)
+    .text(`CI/NIT: ${invoice.customer.ci}`)
+    .moveDown(0.5);
 
-  // Tabla
-  let y = 190;
-  doc.fontSize(12).font("Helvetica-Bold");
-  doc.text("Cantidad", 50, y);
-  doc.text("Descripción", 120, y);
-  doc.text("Precio Unitario", 350, y, { width: 90, align: "right" });
-  doc.text("Subtotal", 450, y, { width: 90, align: "right" });
+  // Tabla encabezado
+  let y = doc.y + 5;
+  doc.font("Helvetica-Bold").fontSize(9);
+  doc.text("Cant.", 10, y);
+  doc.text("Descripción", 45, y);
+  doc.text("P.Unit", 130, y, { width: 40, align: "right" });
+  doc.text("Subt.", 175, y, { width: 40, align: "right" });
 
-  y += 20;
-  doc.moveTo(50, y - 5).lineTo(545, y - 5).stroke();
-  doc.font("Helvetica");
+  y += 12;
+  doc.moveTo(10, y).lineTo(216, y).stroke();
+  y += 3;
 
-  // CORRECTO: recorrer `details`, no `items`
+  doc.font("Helvetica").fontSize(9);
+
+  // Detalles
   invoice.details.forEach((item) => {
     const description = item.product?.name || item.description || "Sin descripción";
     const qty = item.quantity || 1;
-    const price = item.subtotal ;
+    const price = item.subtotal / qty;
     const subtotal = qty * price;
 
-    doc.text(qty.toString(), 50, y);
-    doc.text(description, 120, y);
-    doc.text(`Bs ${price.toFixed(2)}`, 350, y, { width: 90, align: "right" });
-    doc.text(`Bs ${subtotal.toFixed(2)}`, 450, y, { width: 90, align: "right" });
-    y += 20;
+    doc.text(qty.toString(), 10, y);
+    doc.text(description.substring(0, 20), 45, y);
+    doc.text(`Bs ${price.toFixed(2)}`, 130, y, { width: 40, align: "right" });
+    doc.text(`Bs ${subtotal.toFixed(2)}`, 175, y, { width: 40, align: "right" });
+
+    y += 12;
   });
 
-  // Totales
-  doc.moveTo(50, y).lineTo(545, y).stroke();
-  y += 10;
+  // Línea
+  doc.moveTo(10, y).lineTo(216, y).stroke();
+  y += 6;
+
+  // Totales (alineados)
   doc.font("Helvetica-Bold");
-  doc.text("Subtotal:", 350, y, { width: 90, align: "right" });
-  doc.text(`Bs ${(invoice.total - invoice.tax).toFixed(2)}`, 450, y, { width: 90, align: "right" });
-  y += 20;
-  doc.text("IVA (13%):", 350, y, { width: 90, align: "right" });
-  doc.text(`Bs ${invoice.tax.toFixed(2)}`, 450, y, { width: 90, align: "right" });
-  y += 20;
-  doc.text("Total:", 350, y, { width: 90, align: "right" });
-  doc.text(`Bs ${invoice.total.toFixed(2)}`, 450, y, { width: 90, align: "right" });
 
-  // Pie
-  doc.fontSize(10).fillColor("#999").text("Gracias por su compra. ¡Vuelva pronto!", 50, 700, {
-    align: "center",
-    width: 495,
-  });
+  const totalLine = (label, amount) => {
+    doc
+      .text(label, 90, y, { width: 80, align: "right" })
+      .text(`Bs ${amount.toFixed(2)}`, 175, y, { width: 40, align: "right" });
+    y += 12;
+  };
+
+  totalLine("Subtotal:", invoice.total - invoice.tax);
+  totalLine("IVA (13%):", invoice.tax);
+  totalLine("Total:", invoice.total);
+
+  // Pie de página
+  y += 15;
+  doc
+    .fontSize(8)
+    .fillColor("#555")
+    .text("Gracias por su compra. ¡Vuelva pronto!", 10, y, {
+      align: "center",
+      width: 206.77,
+    });
 
   doc.end();
 };
+
